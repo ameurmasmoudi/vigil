@@ -2,7 +2,6 @@ package vigil.api.site;
 
 import org.springframework.stereotype.Repository;
 
-import java.math.BigInteger;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -24,17 +23,10 @@ public class SiteQueries {
     rs.getInt("id"),
     rs.getString("name"),
     rs.getString("url"),
-    statusOf(rs.getBoolean("up"),rs.getObject("response_time_ms", Integer.class),rs.getObject("checked_at", OffsetDateTime.class )),
+    SiteStatus.from(rs.getObject("checked_at", OffsetDateTime.class),rs.getBoolean("up"),rs.getObject("response_time_ms", Integer.class)),
     rs.getObject("response_time_ms", Integer.class),
     rs.getObject("checked_at", OffsetDateTime.class ))).list();
     }
-
-  private SiteStatus statusOf(Boolean up,Integer responseTimeMs,OffsetDateTime checkedAt){
-    if (checkedAt==null) return SiteStatus.PENDING;
-    if (!up) return SiteStatus.DOWN;
-    if (responseTimeMs > 1000) return SiteStatus.SLOW;
-    return SiteStatus.UP;
-  }
 
   public List<CheckResponse> checkSite(Integer id, Integer limit){
     return jdbcClient.sql("select * from check_results where site_id= :id order by checked_at DESC Limit :limit ")
