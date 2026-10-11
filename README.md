@@ -93,16 +93,28 @@ A site is `SLOW` when it is up but its last response took more than 1000 ms.
 
 Both services read their settings from environment variables. `run.sh` and Docker Compose load them from `.env`.
 
-| Variable | Default | |
-|----------|---------|-|
-| `DB_HOST` | `localhost` | |
-| `DB_PORT` | `5432` | |
-| `DB_NAME` | `vigil` | |
-| `DB_USER` | `admin` | |
-| `DB_PASSWORD` | | required |
-| `REDIS_HOST` | `localhost` | |
-| `REDIS_PORT` | `6379` | |
-| `REDIS_PASSWORD` | | required |
+Durations are in milliseconds.
+
+| Variable | Used by | Default | |
+|----------|---------|---------|-|
+| `DB_HOST` | both | `localhost` | |
+| `DB_PORT` | both | `5432` | |
+| `DB_NAME` | both | `vigil` | |
+| `DB_USER` | both | `admin` | |
+| `DB_PASSWORD` | both | | required |
+| `REDIS_HOST` | both | `localhost` | |
+| `REDIS_PORT` | both | `6379` | |
+| `REDIS_PASSWORD` | both | | required |
+| `REDIS_CONNECT_TIMEOUT_MS` | both | api `7000`, worker `5000` | Time allowed to open a connection to Redis |
+| `REDIS_TIMEOUT_MS` | both | `2000` | Time allowed for one Redis command. Must stay above the worker's 1 s queue poll |
+| `CHECK_INTERVAL_MS` | api | `60000` | How often every site is queued for a check |
+| `WORKER_CONCURRENCY` | worker | `50` | Checks one worker runs at the same time |
+| `CHECK_CONNECT_TIMEOUT_MS` | worker | `3000` | Time allowed to connect to a checked site |
+| `CHECK_TIMEOUT_MS` | worker | `5000` | Time allowed for a checked site to respond |
+| `STALE_JOB_MS` | worker | `120000` | Jobs older than this are skipped instead of checked |
+
+On `SIGTERM` the worker stops taking jobs and waits for the checks already running to finish, up to
+`CHECK_CONNECT_TIMEOUT_MS + CHECK_TIMEOUT_MS + REDIS_TIMEOUT_MS + 1000` (11 s with the defaults).
 
 ## Project layout
 
