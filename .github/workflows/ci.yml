@@ -1,0 +1,55 @@
+name: CI pipeline
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+jobs:
+  app-test:
+    name: ${{matrix.app}} test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        app: [api, worker]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: ./${{matrix.app}}
+    steps:
+      - name: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+    
+      - name: setup java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+          cache-dependency-path: ./${{matrix.app}}/pom.xml
+      
+      - name: running test
+        run: ./mvnw verify -B --no-transfer-progress
+
+      - name: upload ${{matrix.app}} test reports
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          path: ./${{matrix.app}}/target/surefire-reports
+          name: ${{matrix.app}} test reports
+        if: failure()
+
+      - name: buildkit builder setup for docker
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+
+      - name: building ${{matrix.app}} image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./${{matrix.app}}
+          push: false
+          tags: vigil-${{matrix.app}}:${{github.sha}}
+
+      
