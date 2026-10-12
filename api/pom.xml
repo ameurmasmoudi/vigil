@@ -123,6 +123,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
+    <finalName>vigil-api</finalName>
 	</build>
 
 </project>

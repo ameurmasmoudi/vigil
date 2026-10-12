@@ -1,0 +1,17 @@
+target/
+build/
+out/
+*.log
+
+.env
+
+Dockerfile
+.dockerignore
+
+.DS_Store
+Thumbs.db
+
+.git*
+.project
+.classpath 
+.settings/
