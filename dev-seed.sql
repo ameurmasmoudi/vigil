@@ -23,7 +23,7 @@ JOIN (VALUES
   ('https://seed-500.example.com',       false, 500,  95,   NULL,                interval '1 minute'),
   ('https://seed-slow.example.com',      true,  200,  400,  NULL,                interval '2 minutes'),
   ('https://seed-slow.example.com',      true,  200,  3200, NULL,                interval '1 minute'),
-  ('https://seed-recovered.example.com', false, NULL, NULL, 'UnknownHostException', interval '3 minutes'),
+  ('https://seed-recovered.example.com', false, NULL, 5000, 'UnknownHostException', interval '3 minutes'),
   ('https://seed-recovered.example.com', false, 502,  300,  NULL,                interval '2 minutes'),
   ('https://seed-recovered.example.com', true,  200,  210,  NULL,                interval '1 minute')
 ) AS c(url, up, status_code, response_time_ms, error, age) ON c.url = s.url;
