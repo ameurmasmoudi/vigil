@@ -83,14 +83,14 @@ pipeline{
               stage('building image'){
                 steps{
                   dir("${APP}"){
-                    sh "docker build . -t ${IMAGE}"
+                    sh "docker build --pull . -t ${IMAGE}"
                   }
                 }
               }
               stage('trivy image scan'){
                 steps{
-                    sh "trivy image ${IMAGE} -f table -o 'trivy-${APP}.txt'"
-                    sh "trivy image --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL ${IMAGE}"
+                    sh "trivy image --cache-dir /home/jenkins/.cahce/trivy/${APP} ${IMAGE} -f table -o 'trivy-${APP}.txt'"
+                    sh "trivy image --cache-dir /home/jenkins/.cahce/trivy/${APP} --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL ${IMAGE}"
                 }
                 post{
                   always{
