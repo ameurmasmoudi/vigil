@@ -37,8 +37,8 @@ pipeline{
       stages{
         stage("api sonar"){
           steps{
-            withSonarQubeEnv("sonarqube"){
-              dir("api"){
+            dir("api"){
+              withSonarQubeEnv("sonarqube"){
                 sh './mvnw sonar:sonar -B --no-transfer-progress'
               }
             }
@@ -49,8 +49,8 @@ pipeline{
         }
         stage("worker sonar"){
           steps{
-            withSonarQubeEnv("sonarqube"){
-              dir("worker"){
+            dir("worker"){
+              withSonarQubeEnv("sonarqube"){
                 sh './mvnw sonar:sonar -B --no-transfer-progress'
               }
             }
