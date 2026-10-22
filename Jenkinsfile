@@ -61,5 +61,47 @@ pipeline{
         }
       }
     }
+    stage("trivy"){
+      stages{
+        stage('FS Scan'){
+          steps{
+            sh 'trivy fs .'
+          }
+        }
+        stage('build and scan'){
+          matrix{
+            axes{
+              axis{
+                name "APP";
+                values 'api','worker'
+              }
+            }
+            environment{
+              IMAGE = "${APP}:${env.GIT_COMMIT}"
+            }
+            stages{
+              stage('building image'){
+                steps{
+                  dir("${APP}"){
+                    sh "docker build . -t ${IMAGE}"
+                  }
+                }
+              }
+              stage('trivy image scan'){
+                steps{
+                    sh "trivy image ${IMAGE} -f table -o 'trivy-${APP}.txt'"
+                    sh "trivy image --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL ${IMAGE}"
+                }
+                post{
+                  always{
+                    archiveArtifacts artifacts: "trivy-${APP}.txt" ,allowEmpltyArchive: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
