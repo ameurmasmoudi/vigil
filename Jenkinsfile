@@ -94,7 +94,7 @@ pipeline{
                 }
                 post{
                   always{
-                    archiveArtifacts artifacts: "trivy-${APP}.txt" ,allowEmpltyArchive: true
+                    archiveArtifacts artifacts: "trivy-${APP}.txt" ,allowEmptyArchive: true
                   }
                 }
               }
