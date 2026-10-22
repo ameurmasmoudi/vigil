@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 RUN java -Djarmode=tools -jar target/vigil-api.jar extract --layers --launcher --destination extracted
 
 FROM eclipse-temurin:25-jre
+RUN rm -f /usr/bin/pebble
 
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75.0"
 

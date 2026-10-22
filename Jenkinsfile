@@ -3,7 +3,7 @@ pipeline{
   options {
     disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '10'))
-    timeout(time: 20, unit: 'MINUTES')
+    timeout(time: 30, unit: 'MINUTES')
   }
   stages {
     stage('test'){
@@ -68,6 +68,12 @@ pipeline{
             sh 'trivy fs .'
           }
         }
+        stage('building the db and java-db'){
+          steps{
+            sh 'trivy image --timeout 15m --download-db-only'
+            sh 'trivy image --timeout 15m --download-java-db-only'
+          }
+        }
         stage('build and scan'){
           matrix{
             axes{
@@ -89,8 +95,8 @@ pipeline{
               }
               stage('trivy image scan'){
                 steps{
-                    sh "trivy image --cache-dir /home/jenkins/.cahce/trivy/${APP} ${IMAGE} -f table -o 'trivy-${APP}.txt'"
-                    sh "trivy image --cache-dir /home/jenkins/.cahce/trivy/${APP} --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL ${IMAGE}"
+                    sh "trivy image --skip-db-update --skip-java-db-update --cache-backend memory ${IMAGE} -f table -o 'trivy-${APP}.txt'"
+                    sh "trivy image --skip-db-update --skip-java-db-update --cache-backend memory --ignore-unfixed --exit-code 1 --severity HIGH,CRITICAL ${IMAGE}"
                 }
                 post{
                   always{
