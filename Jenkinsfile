@@ -61,7 +61,7 @@ pipeline{
         }
       }
     }
-    stage("trivy"){
+    stage("build and trivy"){
       stages{
         stage('FS Scan'){
           steps{
@@ -83,7 +83,7 @@ pipeline{
               }
             }
             environment{
-              IMAGE = "${APP}:${env.GIT_COMMIT}"
+              IMAGE = "ghcr.io/ameurmasmoudi/vigil-${APP}:${env.GIT_COMMIT}"
             }
             stages{
               stage('building image'){
@@ -108,6 +108,27 @@ pipeline{
           }
         }
       }
+    }
+    stage("push to GHCR"){
+      when{branch 'main'}
+      steps{
+        withCredentials([usernamePassword(credentialsId: 'ghcr-token', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+          sh 'echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin'
+        }
+        sh "docker push ghcr.io/ameurmasmoudi/vigil-api:${env.GIT_COMMIT}"
+        sh "docker push ghcr.io/ameurmasmoudi/vigil-worker:${env.GIT_COMMIT}"
+      }
+      post{
+        always{
+          sh 'docker logout ghcr.io'
+        }
+      }
+    }
+  }
+  post{
+    always{
+      sh "docker rmi  ghcr.io/ameurmasmoudi/vigil-api:${env.GIT_COMMIT} ||true"
+      sh "docker rmi ghcr.io/ameurmasmoudi/vigil-worker:${env.GIT_COMMIT} ||true"
     }
   }
 }
